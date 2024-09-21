@@ -5,6 +5,7 @@ const CitySearch = ({ onCityChange }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [isOpen, setIsOpen] = useState(false);
   const [cities, setCities] = useState([]);
+  const [error, setError] = useState(null);
   const dropdownRef = useRef(null);
 
   useEffect(() => {
@@ -22,19 +23,27 @@ const CitySearch = ({ onCityChange }) => {
 
   useEffect(() => {
     if (searchTerm.length > 2) {
-      // This is a mock API call. In a real application, you would call an actual API here.
-      const mockApiCall = setTimeout(() => {
-        const mockCities = [
-          `${searchTerm} City`,
-          `${searchTerm}ville`,
-          `${searchTerm} Town`,
-          `New ${searchTerm}`,
-          `${searchTerm}opolis`
-        ];
-        setCities(mockCities);
+      const fetchCities = async () => {
+        try {
+          const response = await fetch(`https://api.opencagedata.com/geocode/v1/json?q=${encodeURIComponent(searchTerm)}&key=a95e37c8544e4b48ada4ea95cb2d9cde`);
+          if (!response.ok) {
+            throw new Error('Network response was not ok');
+          }
+          const data = await response.json();
+          setCities(data.results); // Adjust based on the actual response structure
+          setError(null); // Clear any previous errors
+        } catch (error) {
+          console.error('Error fetching city data:', error);
+          setError('Failed to load city suggestions. Please try again later.');
+          setCities([]); // Clear cities on error
+        }
+      };
+
+      const debounceTimer = setTimeout(() => {
+        fetchCities();
       }, 300);
 
-      return () => clearTimeout(mockApiCall);
+      return () => clearTimeout(debounceTimer);
     } else {
       setCities([]);
     }
@@ -49,8 +58,8 @@ const CitySearch = ({ onCityChange }) => {
   };
 
   const handleCitySelect = (city) => {
-    setSearchTerm(city);
-    onCityChange(city);
+    setSearchTerm(city.formatted_address || city.components.city || city.components.state); // Adjust based on the API response
+    onCityChange(city.formatted_address || city.components.city); // Pass the selected city name
     setIsOpen(false);
   };
 
@@ -70,11 +79,12 @@ const CitySearch = ({ onCityChange }) => {
               className="search-input"
             />
           </form>
+          {error && <div className="error-message">{error}</div>}
           {cities.length > 0 && (
             <ul className="city-list">
               {cities.map((city, index) => (
                 <li key={index} onClick={() => handleCitySelect(city)}>
-                  {city}
+                  {city.formatted_address || city.components.city || city.components.state} {/* Adjust based on the actual API response */}
                 </li>
               ))}
             </ul>
