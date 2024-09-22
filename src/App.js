@@ -56,7 +56,7 @@ const App = () => {
         localStorage.setItem('weatherData', JSON.stringify({
           city: cityName,
           current: data.current,
-          forecast: data.forecast
+          forecast: data.forecast,
         }));
         localStorage.setItem('lastSearchedCity', cityName);
       }

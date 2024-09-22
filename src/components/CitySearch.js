@@ -9,6 +9,7 @@ const CitySearch = ({ onCityChange }) => {
   const dropdownRef = useRef(null);
 
   useEffect(() => {
+    // Close the dropdown if clicking outside of it
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setIsOpen(false);
@@ -25,39 +26,59 @@ const CitySearch = ({ onCityChange }) => {
     if (searchTerm.length > 2) {
       const fetchCities = async () => {
         try {
-          const apiKey = 'c9cab246cdbe1de159121bd79f7707b9'; 
+          // Access the API key from .env file
+          const apiKey = process.env.REACT_APP_WEATHER_API_KEY;
+
+          // Log the API key to check if it's being accessed correctly
+          console.log('Using API Key:', apiKey);
+
+          if (!apiKey) {
+            throw new Error('API key is missing. Make sure the .env file is set up correctly.');
+          }
+
+          // Make API call to fetch city data
           const response = await fetch(
             `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(searchTerm)}&appid=${apiKey}`
           );
+
+          // Check if the response is successful
           if (!response.ok) {
-            throw new Error('Network response was not ok');
+            const errorData = await response.json();
+            console.error('Error Response:', errorData);
+            throw new Error(`Error: ${errorData.message || 'Network response was not ok'}`);
           }
+
+          // Parse the data
           const data = await response.json();
-          
+          console.log('City Data:', data);
+
+          // If city data is valid, add it to the list
           if (data && data.name) {
-            setCities([data]); 
+            setCities([data]);
           } else {
             setCities([]);
           }
-          
-          setError(null); 
+          setError(null); // Clear any previous errors
         } catch (error) {
+          // Log and display any errors that occur
           console.error('Error fetching city data:', error);
           setError('Failed to load city suggestions. Please try again later.');
-          setCities([]); 
+          setCities([]);
         }
       };
 
+      // Add debounce to delay the API call
       const debounceTimer = setTimeout(() => {
         fetchCities();
       }, 300);
 
       return () => clearTimeout(debounceTimer);
     } else {
-      setCities([]);
+      setCities([]); // Reset city list when search term is too short
     }
   }, [searchTerm]);
 
+  // Handle form submission
   const handleSubmit = (e) => {
     e.preventDefault();
     if (searchTerm.trim()) {
@@ -66,10 +87,11 @@ const CitySearch = ({ onCityChange }) => {
     }
   };
 
+  // Handle city selection from the dropdown list
   const handleCitySelect = (city) => {
     const selectedCity = city.name;
     setSearchTerm(selectedCity);
-    onCityChange(selectedCity); 
+    onCityChange(selectedCity);
     setIsOpen(false);
   };
 
@@ -94,7 +116,7 @@ const CitySearch = ({ onCityChange }) => {
             <ul className="city-list">
               {cities.map((city, index) => (
                 <li key={index} onClick={() => handleCitySelect(city)}>
-                  {city.name} 
+                  {city.name}
                 </li>
               ))}
             </ul>
