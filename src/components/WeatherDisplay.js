@@ -1,12 +1,13 @@
 import React from 'react';
+
 const WeatherDisplay = ({ weather, city, unit }) => {
   if (!weather) {
-    return <div className="weather-display">Loading weather data...</div>;
+    return <div className="weather-display">No weather data available</div>;
   }
 
   const temperature = unit === 'celsius'
     ? weather.temp_c
-    : (weather.temp_c * 9/5) + 32; // Convert Celsius to Fahrenheit
+    : (weather.temp_c * 9/5) + 32;
 
   return (
     <div className="weather-display">

@@ -25,19 +25,26 @@ const CitySearch = ({ onCityChange }) => {
     if (searchTerm.length > 2) {
       const fetchCities = async () => {
         try {
+          const apiKey = 'c9cab246cdbe1de159121bd79f7707b9'; 
           const response = await fetch(
-            `https://api.opencagedata.com/geocode/v1/json?q=${encodeURIComponent(searchTerm)}&key=a95e37c8544e4b48ada4ea95cb2d9cde`
+            `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(searchTerm)}&appid=${apiKey}`
           );
           if (!response.ok) {
             throw new Error('Network response was not ok');
           }
           const data = await response.json();
-          setCities(data.results.filter(city => city.components && city.components.city)); // Filter cities that have 'city' component
-          setError(null); // Clear any previous errors
+          
+          if (data && data.name) {
+            setCities([data]); 
+          } else {
+            setCities([]);
+          }
+          
+          setError(null); 
         } catch (error) {
           console.error('Error fetching city data:', error);
           setError('Failed to load city suggestions. Please try again later.');
-          setCities([]); // Clear cities on error
+          setCities([]); 
         }
       };
 
@@ -60,9 +67,9 @@ const CitySearch = ({ onCityChange }) => {
   };
 
   const handleCitySelect = (city) => {
-    const selectedCity = city.components.city;
+    const selectedCity = city.name;
     setSearchTerm(selectedCity);
-    onCityChange(selectedCity); // Pass the selected city name
+    onCityChange(selectedCity); 
     setIsOpen(false);
   };
 
@@ -87,7 +94,7 @@ const CitySearch = ({ onCityChange }) => {
             <ul className="city-list">
               {cities.map((city, index) => (
                 <li key={index} onClick={() => handleCitySelect(city)}>
-                  {city.components.city} {/* Only display city name */}
+                  {city.name} 
                 </li>
               ))}
             </ul>

@@ -84,20 +84,20 @@ const App = () => {
         <WiDaySunny className="weather-icon" />
         <h1>Weather Forecast</h1>
       </header>
-      <main>
-        <CitySearch onCityChange={handleCityChange} />
-        <TemperatureUnitToggle unit={unit} onUnitChange={handleUnitChange} />
-        {isLoading ? (
-          <CircularProgress />
-        ) : (
-          <>
-            {weatherData && (
+      <main className="main-content">
+        <div className='main-content-1'>
+          <CitySearch onCityChange={handleCityChange} />
+          <TemperatureUnitToggle unit={unit} onUnitChange={handleUnitChange} />
+          {isLoading ? (
+            <CircularProgress />
+          ) : (
+            weatherData && (
               <WeatherDisplay weather={weatherData} city={city} unit={unit} />
-            )}
-            {forecastData && (
-              <ForecastDisplay forecast={forecastData} unit={unit} />
-            )}
-          </>
+            )
+          )}
+        </div>
+        {!isLoading && forecastData && (
+          <ForecastDisplay forecast={forecastData} unit={unit} />
         )}
       </main>
       <Snackbar
